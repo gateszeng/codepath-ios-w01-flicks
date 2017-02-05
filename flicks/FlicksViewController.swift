@@ -11,7 +11,10 @@ import AFNetworking
 import MBProgressHUD
 
 class FlicksViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    let ANIMATE_TIME: TimeInterval = 0.2
+
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var errorView: UIView!
     var movies: [NSDictionary]?
 
     override func viewDidLoad() {
@@ -20,32 +23,45 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.dataSource = self
         tableView.delegate = self
         
+        errorView.transform = CGAffineTransform(translationX: 0, y: -40)
+        
         // initialize a UIRefreshControl
         let refreshControl = UIRefreshControl()
+        
         // bind action to refresh control
         refreshControl.addTarget(self, action: #selector(refreshControlAction(_:)), for: UIControlEvents.valueChanged)
-        // insert control into llist
+        
+        // insert control into list
         tableView.insertSubview(refreshControl, at: 0)
         
-        // Loading the loading HUD before network request
+        // loading the loading HUD before network request
         MBProgressHUD.showAdded(to: self.view, animated: true)
         
+        // create url for network request
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+        
+        // create network request
+        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 2)
         let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
         let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
             if let data = data {
                 if let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
                     print(dataDictionary)
                     
-                    // Hide loading HUD after network request
-                    MBProgressHUD.hide(for: self.view, animated: true)
-                    
                     self.movies = dataDictionary["results"] as! [NSDictionary]
                     self.tableView.reloadData()
                 }
             }
+            // network request failed
+            else {
+                UIView.animate(withDuration: self.ANIMATE_TIME, animations: {
+                    self.errorView.transform = CGAffineTransform(translationX: 0, y: 0)
+                })
+            }
+            
+            // Hide loading HUD after network request
+            MBProgressHUD.hide(for: self.view, animated: true)
         }
         task.resume()
     }
@@ -56,6 +72,10 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     func refreshControlAction(_ refreshControl: UIRefreshControl) {
+        UIView.animate(withDuration: ANIMATE_TIME, animations: {
+            self.errorView.transform = CGAffineTransform(translationX: 0, y: -40)
+        })
+        
         // constants for grabbing info from api
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
@@ -66,6 +86,7 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         // configure session so that completion handler is executed on main UI thread
         let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
         let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
+            // network request successful
             if let data = data {
                 if let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
                     print(dataDictionary)
@@ -74,17 +95,22 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
                     
                     // reload tableView with updated data
                     self.tableView.reloadData()
-                    
-                    // tell refreshControl to stop spinning
-                    refreshControl.endRefreshing()
                 }
             }
+            // network request failed
+            else {
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.errorView.transform = CGAffineTransform(translationX: 0, y: 0)
+                })
+            }
+            
+            // tell refreshControl to stop spinning
+            refreshControl.endRefreshing()
         }
         task.resume()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
         if let movies = movies {
             return movies.count
         } else {
