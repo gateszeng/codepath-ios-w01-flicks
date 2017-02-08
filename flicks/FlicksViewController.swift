@@ -22,7 +22,7 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         
         tableView.dataSource = self
         tableView.delegate = self
-        
+        errorView.alpha = 0;
         errorView.transform = CGAffineTransform(translationX: 0, y: -40)
         
         // initialize a UIRefreshControl
@@ -56,6 +56,7 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
             // network request failed
             else {
                 UIView.animate(withDuration: self.ANIMATE_TIME, animations: {
+                    self.errorView.alpha = 1;
                     self.errorView.transform = CGAffineTransform(translationX: 0, y: 0)
                 })
             }
@@ -73,6 +74,7 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
     
     func refreshControlAction(_ refreshControl: UIRefreshControl) {
         UIView.animate(withDuration: ANIMATE_TIME, animations: {
+            self.errorView.alpha = 0;
             self.errorView.transform = CGAffineTransform(translationX: 0, y: -40)
         })
         
@@ -100,6 +102,7 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
             // network request failed
             else {
                 UIView.animate(withDuration: 0.2, animations: {
+                    self.errorView.alpha = 1;
                     self.errorView.transform = CGAffineTransform(translationX: 0, y: 0)
                 })
             }
@@ -127,31 +130,36 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         let overview = movie["overview"] as! String
         
         let baseURL = "https://image.tmdb.org/t/p/w500"
-        let posterPath = movie["poster_path"] as! String
-        
-        let imageURL = NSURL(string: baseURL + posterPath)
+        if let posterPath = movie["poster_path"] as? String {
+            let imageURL = NSURL(string: baseURL + posterPath)
+            cell.movieView.setImageWith(imageURL as! URL)
+        }
         
         cell.titleLabel.text = title
         cell.overviewLabel.text = overview
-        cell.movieView.setImageWith(imageURL as! URL)
-        
-        
-        
-        
         
         print("row \(indexPath.row)")
         return cell
     }
 
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let cell = sender as! UITableViewCell
+        let indexPath = tableView.indexPath(for: cell)
+        let movie = movies![indexPath!.row]
+        
+        let detailViewController = segue.destination as! DetailViewController
+        detailViewController.movie = movie
+        
+        print("prepare for segue called")
+        
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
     }
-    */
+    
 
 }
