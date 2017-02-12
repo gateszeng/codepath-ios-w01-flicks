@@ -66,6 +66,11 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
             MBProgressHUD.hide(for: self.view, animated: true)
         }
         task.resume()
+        
+        if let UINavigationBar = navigationController?.navigationBar {
+            UINavigationBar.backgroundColor = UIColor(red: 145/255, green: 236/255, blue: 255/255, alpha: 1.0) /* #91ecff */
+
+        }
     }
 
     override func didReceiveMemoryWarning() {

@@ -64,6 +64,9 @@ class DetailViewController: UIViewController {
                     self.setLargeImage(largeImageRequest: largeImageRequest, placeholder: #imageLiteral(resourceName: "poster_placeholder"))
             })
         }
+        
+        self.navigationItem.title = title
+        
         print(movie)
     }
     
