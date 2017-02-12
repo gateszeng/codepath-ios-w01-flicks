@@ -136,6 +136,10 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
             cell.movieView.setImageWith(imageURL as! URL)
         }
         
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor(red: 0/255, green: 172/255, blue: 252/255, alpha: 1.0) /* #00acfc */
+        cell.selectedBackgroundView = backgroundView
+        
         cell.titleLabel.text = title
         cell.overviewLabel.text = overview
         
