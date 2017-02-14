@@ -38,35 +38,10 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         // loading the loading HUD before network request
         MBProgressHUD.showAdded(to: self.view, animated: true)
         
-        // create url for network request
-        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = URL(string: "https://api.themoviedb.org/3/movie/\(endpoint!)?api_key=\(apiKey)")!
+        // grab data from online and populate vars
+        makeNetworkRequest(nil)
         
-        // create network request
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 2)
-        let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
-        let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
-            if let data = data {
-                if let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
-                    print(dataDictionary)
-                    
-                    self.movies = dataDictionary["results"] as! [NSDictionary]
-                    self.tableView.reloadData()
-                }
-            }
-            // network request failed
-            else {
-                UIView.animate(withDuration: self.ANIMATE_TIME, animations: {
-                    self.errorView.alpha = 1;
-                    self.errorView.transform = CGAffineTransform(translationX: 0, y: 0)
-                })
-            }
-            
-            // Hide loading HUD after network request
-            MBProgressHUD.hide(for: self.view, animated: true)
-        }
-        task.resume()
-        
+        // customize nav bar
         if let UINavigationBar = navigationController?.navigationBar {
             UINavigationBar.backgroundColor = UIColor(red: 145/255, green: 236/255, blue: 255/255, alpha: 1.0) /* #91ecff */
 
@@ -78,18 +53,13 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         // Dispose of any resources that can be recreated.
     }
     
-    func refreshControlAction(_ refreshControl: UIRefreshControl) {
-        UIView.animate(withDuration: ANIMATE_TIME, animations: {
-            self.errorView.alpha = 0;
-            self.errorView.transform = CGAffineTransform(translationX: 0, y: -40)
-        })
-        
-        // constants for grabbing info from api
+    func makeNetworkRequest(_ refreshControl: UIRefreshControl?) {
+        // create url for network request
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = URL(string: "https://api.themoviedb.org/3/movie/\(endpoint!)?api_key=\(apiKey)")!
         
-        // create a  network request
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+        // create network request
+        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 2)
         
         // configure session so that completion handler is executed on main UI thread
         let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
@@ -107,16 +77,34 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
             }
             // network request failed
             else {
-                UIView.animate(withDuration: 0.2, animations: {
+                UIView.animate(withDuration: self.ANIMATE_TIME, animations: {
                     self.errorView.alpha = 1;
                     self.errorView.transform = CGAffineTransform(translationX: 0, y: 0)
                 })
             }
             
+            // hide loading HUD after network request
+            MBProgressHUD.hide(for: self.view, animated: true)
+            
             // tell refreshControl to stop spinning
-            refreshControl.endRefreshing()
+            if let refreshControl = refreshControl {
+                refreshControl.endRefreshing()
+            }
+
         }
         task.resume()
+        
+    }
+    
+    func refreshControlAction(_ refreshControl: UIRefreshControl) {
+        // animate the refresh icon
+        UIView.animate(withDuration: ANIMATE_TIME, animations: {
+            self.errorView.alpha = 0;
+            self.errorView.transform = CGAffineTransform(translationX: 0, y: -40)
+        })
+        
+        // grab data from network and populate vars
+        makeNetworkRequest(refreshControl)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
