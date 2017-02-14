@@ -18,9 +18,14 @@
                                 <frame key="frameInset" width="375" height="667"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <searchBar key="tableHeaderView" contentMode="redraw" id="vtd-66-ELk">
+                                    <rect key="frame" x="0.0" y="64" width="375" height="44"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                    <textInputTraits key="textInputTraits"/>
+                                </searchBar>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="MovieCell" rowHeight="104" id="UwT-jJ-1T7" customClass="MovieCell" customModule="flicks" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="92" width="375" height="104"/>
+                                        <rect key="frame" x="0.0" y="136" width="375" height="104"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="UwT-jJ-1T7" id="7Lg-fg-b7V">
                                             <frame key="frameInset" width="342" height="103"/>
@@ -76,6 +81,7 @@
                     <connections>
                         <outlet property="TableView" destination="kgs-zP-jSK" id="2L1-lH-LVF"/>
                         <outlet property="errorView" destination="ehG-n0-xfj" id="fZs-Du-HWZ"/>
+                        <outlet property="searchBar" destination="vtd-66-ELk" id="SvY-Nf-6Wd"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

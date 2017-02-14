@@ -10,19 +10,25 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class FlicksViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class FlicksViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
     let ANIMATE_TIME: TimeInterval = 0.2
 
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var errorView: UIView!
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     var movies: [NSDictionary]?
     var endpoint: String!
+    var filteredMovies: [NSDictionary]?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         tableView.dataSource = self
         tableView.delegate = self
+        searchBar.delegate = self
+        
+        // initialize the error bar
         errorView.alpha = 0;
         errorView.transform = CGAffineTransform(translationX: 0, y: -40)
         
@@ -44,7 +50,6 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         // customize nav bar
         if let UINavigationBar = navigationController?.navigationBar {
             UINavigationBar.backgroundColor = UIColor(red: 145/255, green: 236/255, blue: 255/255, alpha: 1.0) /* #91ecff */
-
         }
     }
 
@@ -70,6 +75,7 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
                     print(dataDictionary)
                     
                     self.movies = dataDictionary["results"] as! [NSDictionary]
+                    self.filteredMovies = self.movies
                     
                     // reload tableView with updated data
                     self.tableView.reloadData()
@@ -91,6 +97,8 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
                 refreshControl.endRefreshing()
             }
 
+            // set the filteredMovies list
+            
         }
         task.resume()
         
@@ -108,18 +116,18 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let movies = movies {
-            return movies.count
+        if let filteredMovies = filteredMovies {
+            return filteredMovies.count
         } else {
             return 0
         }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
+        // get current cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
         
-        let movie = movies![indexPath.row]
+        let movie = filteredMovies![indexPath.row]
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
         
@@ -140,7 +148,29 @@ class FlicksViewController: UIViewController, UITableViewDataSource, UITableView
         return cell
     }
 
+    // This method updates filteredData based on the text in the Search Box
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty{
+            filteredMovies = movies
+        } else {
+            filteredMovies = searchText.isEmpty ? movies : movies!.filter({ (movie) -> Bool in
+                return (movie["title"] as! String).lowercased().hasPrefix(searchText.lowercased())
+            })
+        }
+        tableView.reloadData()
+    }
 
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        self.searchBar.showsCancelButton = true
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+        searchBar.text = ""
+        searchBar.resignFirstResponder()
+        filteredMovies = movies
+        tableView.reloadData()
+    }
     
     // MARK: - Navigation
 
