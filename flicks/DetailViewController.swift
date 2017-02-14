@@ -20,8 +20,7 @@ class DetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: infoView.frame.origin.y + infoView.frame.size.height)
+
         
         let title = movie["title"] as? String
         titleLabel.text = title
@@ -29,6 +28,9 @@ class DetailViewController: UIViewController {
         let overview = movie["overview"] as? String
         overviewLabel.text = overview
         overviewLabel.sizeToFit()
+        
+        infoView.frame.size.height = titleLabel.frame.height + overviewLabel.frame.height + 20
+        scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: infoView.frame.origin.y + infoView.frame.size.height)
         
         let baseURL = "https://image.tmdb.org/t/p/w500"
         if let posterPath = movie["poster_path"] as? String {
@@ -49,11 +51,18 @@ class DetailViewController: UIViewController {
                 smallImageRequest as URLRequest,
                 placeholderImage: nil,
                 success: { (smallImageRequest, smallImageResponse, smallImage) -> Void in
-                    
                     // smallImageResponse will be nil if the smallImage is already available
                     // in cache (might want to do something smarter in that case).
-                    self.posterImageView.alpha = 0.0
-                    self.posterImageView.image = smallImage;
+                    if smallImageResponse != nil {
+                        self.posterImageView.alpha = 0.0
+                        self.posterImageView.image = smallImage;
+                        UIView.animate(withDuration: 0.3, animations: { () -> Void in
+                            self.posterImageView.alpha = 1.0
+                        })
+                    } else {
+                        // cached, so just set the image
+                        self.posterImageView.image = smallImage
+                    }
                     
                     self.setLargeImage(largeImageRequest: largeImageRequest, placeholder: smallImage)
                     
@@ -83,9 +92,8 @@ class DetailViewController: UIViewController {
                     largeImageRequest as URLRequest,
                     placeholderImage: placeholder,
                     success: { (largeImageRequest, largeImageResponse, largeImage) -> Void in
-                        
                         self.posterImageView.image = largeImage;
-                        
+
                     },
                     failure: { (request, response, error) -> Void in
                         // do something for the failure condition of the large image request
